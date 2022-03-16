@@ -1,8 +1,10 @@
 package perscholas;
 import perscholas.database.dao.ActorDAO;
+import perscholas.database.dao.MovieActorsDAO;
 import perscholas.database.dao.MovieDAO;
 import perscholas.database.entity.Actor;
 import perscholas.database.entity.Movie;
+import perscholas.database.entity.MovieActors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -19,6 +21,7 @@ public class HibernateDemo {
 
     private ActorDAO actorDAO = new ActorDAO();
     private MovieDAO movieDAO = new MovieDAO();
+    private MovieActorsDAO movieActorsDAO = new MovieActorsDAO();
 
     public void work(){
 //        read();
@@ -28,40 +31,67 @@ public class HibernateDemo {
 //        update();
 //        findByFirstNameAndLastName();
 //        printMoviesAndActors();
-        addActorToMovie();
+//        addActorToMovie();
+//        queryOneToMany();
+        findByActorId();
+    }
+
+    private void findByActorId(){
+        List<MovieActors> movieActors = movieActorsDAO.findByActorId(11);
+
+        for(MovieActors ma : movieActors){
+            String firstName = ma.getActor().getFirstName();
+            String lastName = ma.getActor().getLastName();
+            String movieTitle = ma.getMovie().getTitle();
+            String characterName = ma.getCharacterName();
+            System.out.printf("%s %s plays the character %s in the movie %s\n", firstName, lastName, characterName, movieTitle);
+        }
+    }
+
+    private void queryOneToMany(){
+
+        List<MovieActors> movieActors1 = movieActorsDAO.findByMovieId(1);
+        for(MovieActors ma : movieActors1){
+            String movieTitle = ma.getMovie().getTitle();
+            String firstName = ma.getActor().getFirstName();
+            String lastName = ma.getActor().getLastName();
+            String characterName = ma.getCharacterName();
+            System.out.printf("In %s, %s %s plays the character %s.\n", movieTitle, firstName, lastName, characterName);
+        }
+
     }
 
     private void addActorToMovie(){
 
-        Movie movie = movieDAO.findById(2);
-
-        Actor actor = actorDAO.findById(1);
-        actor.getMovies().add(movie);
-        actorDAO.update(actor);
-
-        Actor actor2 = actorDAO.findById(3);
-        actor2.getMovies().add(movie);
-        actorDAO.update(actor2);
-
-        movie.getActors().add(actor);
-        movie.getActors().add(actor2);
-
-        movieDAO.update(movie);
-    }
-
-    private void printMoviesAndActors(){
         Movie movie = movieDAO.findById(1);
-        for (Actor actor : movie.getActors() ) {
-            System.out.println(actor);
-        }
 
-        Actor actor = actorDAO.findById(11);
-        for(Movie movie2 : actor.getMovies()){
-            System.out.println(movie2);
-        }
+        Actor actor = actorDAO.findById(12);
+
+        MovieActors movieActors = new MovieActors();
+        movieActors.setMovie(movie);
+        movieActors.setActor(actor);
+        movieActors.setCharacterName("Luke Skywalker");
+
+        System.out.println("Before save: " + movieActors);
+
+        movieActorsDAO.save(movieActors);
+
+        System.out.println("After save: " + movieActors);
 
 
     }
+
+//    private void printMoviesAndActors(){
+//        Movie movie = movieDAO.findById(1);
+//        for (Actor actor : movie.getActors() ) {
+//            System.out.println(actor);
+//        }
+//
+//        Actor actor = actorDAO.findById(11);
+//        for(Movie movie2 : actor.getMovies()){
+//            System.out.println(movie2);
+//        }
+//    }
 
     private void findByFirstNameAndLastName(){
         List<Actor> actors = actorDAO.findByFirstNameAndLastName("Mark", "Ruffalo");
